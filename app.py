@@ -26,6 +26,7 @@ START_RATING = 1500
 K_FACTOR = 40
 HOME_ADVANTAGE = 73
 MARGIN_DIVISOR = 12
+VALID_RESULTS = ["WIN", "LOSS", "PUSH", "VOID", "DRAW"]
 
 USER_AGENT = "Jayden AFL Predictor - jayken305@gmail.com"
 TEAM_NAME_MAP = {
@@ -309,6 +310,14 @@ def calculate_profit_loss(stake, result, decimal_odds):
         return 0
 
     return 0
+
+def clean_result(result):
+    result = str(result).strip().upper()
+
+    if result in VALID_RESULTS:
+        return result
+
+    return ""
 
 
 def value_rating(edge_percent, roi_percent):
@@ -632,10 +641,27 @@ if uploaded_tracker is not None:
         hide_index=True
     )
 
-    settled_df = tracker_df[
+    tracker_df["Clean Result"] = tracker_df["Result"].apply(
+        clean_result
+    )
+
+    invalid_results = tracker_df[
         tracker_df["Result"].notna()
         & (tracker_df["Result"].astype(str).str.strip() != "")
+        & (tracker_df["Clean Result"] == "")
     ].copy()
+
+    if not invalid_results.empty:
+        st.warning(
+            f"Ignored {len(invalid_results)} invalid result entries. "
+            "Use only WIN, LOSS, PUSH, VOID, or DRAW."
+        )
+
+    settled_df = tracker_df[
+        tracker_df["Clean Result"] != ""
+    ].copy()
+
+    settled_df["Result"] = settled_df["Clean Result"]
 
     if settled_df.empty:
         st.info(
@@ -710,7 +736,7 @@ if uploaded_tracker is not None:
             roi_percent = 0
 
         wins = settled_df[
-            settled_df["Result"].astype(str).str.upper() == "WIN"
+            settled_df["Result"] == "WIN"
         ]
 
         win_rate = (len(wins) / total_bets) * 100
