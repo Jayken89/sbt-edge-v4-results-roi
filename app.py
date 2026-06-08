@@ -563,7 +563,7 @@ with col3:
 with col4:
     st.metric(
         "Model Version",
-        "V4.2 Auto P/L"
+        "V4.4 Editable Tracker"
     )
 
 st.info(
@@ -635,12 +635,66 @@ if uploaded_tracker is not None:
         f"Loaded {len(tracker_df)} tracked bets."
     )
 
-    st.dataframe(
-        tracker_df,
-        width="stretch",
-        hide_index=True
+    st.caption(
+        "Edit Stake, Result, Profit/Loss, and Notes directly here. "
+        "Valid results: WIN, LOSS, PUSH, VOID, DRAW."
     )
 
+    editable_tracker_df = st.data_editor(
+        tracker_df,
+        width="stretch",
+        hide_index=True,
+        column_config={
+            "Result": st.column_config.SelectboxColumn(
+                "Result",
+                options=["", "WIN", "LOSS", "PUSH", "VOID", "DRAW"],
+                help="Select the final result"
+            ),
+            "Stake": st.column_config.NumberColumn(
+                "Stake",
+                min_value=0.0,
+                step=1.0,
+                format="$%.2f"
+            ),
+            "Profit/Loss": st.column_config.NumberColumn(
+                "Profit/Loss",
+                step=1.0,
+                format="$%.2f",
+                help="Optional. Leave blank to auto-calculate."
+            ),
+            "Notes": st.column_config.TextColumn(
+                "Notes"
+            )
+        },
+        disabled=[
+            "Round",
+            "Match",
+            "Final Tip",
+            "Bet Type",
+            "Predicted Margin",
+            "Bookmaker Odds",
+            "Best Bookmaker",
+            "Elo Confidence",
+            "Break Even %",
+            "Model Edge %",
+            "Expected ROI %",
+            "Value Rating",
+            "Multi Eligible",
+            "Risk",
+            "Recommended Units",
+            "Recommended Stake"
+        ]
+    )
+
+    tracker_df = editable_tracker_df
+
+    st.download_button(
+        label="Download Updated Tracker CSV",
+        data=tracker_df.to_csv(index=False),
+        file_name="updated_bet_tracker.csv",
+        mime="text/csv"
+    )
+    
     tracker_df["Clean Result"] = tracker_df["Result"].apply(
         clean_result
     )
