@@ -563,7 +563,7 @@ with col3:
 with col4:
     st.metric(
         "Model Version",
-        "V4.4 Editable Tracker"
+        "V4.5 Bankroll Chart"
     )
 
 st.info(
@@ -630,6 +630,13 @@ uploaded_tracker = st.file_uploader(
 if uploaded_tracker is not None:
 
     tracker_df = pd.read_csv(uploaded_tracker)
+
+    # Clean editable text columns so Streamlit data_editor accepts them
+    for text_col in ["Result", "Notes"]:
+        if text_col not in tracker_df.columns:
+            tracker_df[text_col] = ""
+
+        tracker_df[text_col] = tracker_df[text_col].fillna("").astype(str)
 
     st.success(
         f"Loaded {len(tracker_df)} tracked bets."
@@ -770,6 +777,19 @@ if uploaded_tracker is not None:
         total_staked = settled_df["Stake"].sum()
         total_profit = settled_df["Final Profit/Loss"].sum()
 
+        settled_df = settled_df.reset_index(drop=True)
+
+        settled_df["Bet Number"] = settled_df.index + 1
+
+        settled_df["Running Profit/Loss"] = settled_df[
+            "Final Profit/Loss"
+        ].cumsum()
+
+        settled_df["Running Bankroll"] = (
+            starting_bankroll
+            + settled_df["Running Profit/Loss"]
+        )
+
         if unit_size > 0:
             total_staked_units = total_staked / unit_size
             profit_units = total_profit / unit_size
@@ -834,11 +854,28 @@ if uploaded_tracker is not None:
                 "Bankroll Growth",
                 f"{bankroll_growth:.1f}%"
         )
-            
+
+        st.subheader("📈 Bankroll Performance Chart")
+
+        chart_df = settled_df[
+            [
+                "Bet Number",
+                "Running Bankroll"
+            ]
+        ].copy()
+
+        st.line_chart(
+            chart_df,
+            x="Bet Number",
+            y="Running Bankroll",
+            height=320
+        )
+
         st.subheader("Settled Bet Details")
 
         settled_display = settled_df[
             [
+                "Bet Number",
                 "Match",
                 "Final Tip",
                 "Bookmaker Odds",
@@ -846,6 +883,7 @@ if uploaded_tracker is not None:
                 "Result",
                 "Auto Profit/Loss",
                 "Final Profit/Loss",
+                "Running Bankroll",
                 "Value Rating",
                 "Risk"
             ]

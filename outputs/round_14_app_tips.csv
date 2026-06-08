@@ -1,8 +1,8 @@
 Match,Final Tip,Predicted Margin,Raw Margin,Margin Category,Elo Confidence,Edge Score,Home Win %,Away Win %,Squiggle Tip,Squiggle Votes,Risk,Bookmaker Odds,Best Bookmaker,Break Even %,Model Edge %,Expected ROI %,Value Rating,Multi Eligible
-Western Bulldogs v Adelaide,Western Bulldogs,Western Bulldogs by 5,5.5,Close Game,59.4,6.4,59.4,40.6,Western Bulldogs,22-2,MEDIUM,1.5,Manual / No API Match,66.7,-7.3,-10.9,No Value,NO
-Geelong v Gold Coast,Geelong,Geelong by 11,11.0,Solid Margin,68.1,7.3,68.1,31.9,Geelong,25-0,MEDIUM,1.5,Manual / No API Match,66.7,1.4,2.1,Small Edge,NO
-Melbourne v Essendon,Melbourne,Melbourne by 25,25.3,Strong Margin,85.1,10.0,85.1,14.9,Melbourne,24-0,LOW,1.5,Manual / No API Match,66.7,18.4,27.6,Strong Value,YES
-North Melbourne v West Coast,North Melbourne,North Melbourne by 14,14.5,Solid Margin,73.1,8.8,73.1,26.9,North Melbourne,23-0,LOW,1.5,Manual / No API Match,66.7,6.4,9.7,Value,YES
-Port Adelaide v Sydney,Sydney,Sydney by 18,-17.7,Solid Margin,77.3,9.2,22.7,77.3,Sydney,0-24,LOW,1.5,Manual / No API Match,66.7,10.6,15.9,Strong Value,YES
-Richmond v Brisbane Lions,Brisbane Lions,Brisbane Lions by 10,-10.1,Solid Margin,66.7,7.2,33.3,66.7,Brisbane Lions,0-24,MEDIUM,1.5,Manual / No API Match,66.7,0.0,0.1,No Value,NO
-St Kilda v Greater Western Sydney,St Kilda,St Kilda by less than 1,0.3,Close Game,50.6,5.6,50.6,49.4,St Kilda,18-5,MEDIUM,1.5,Manual / No API Match,66.7,-16.1,-24.1,No Value,NO
+Western Bulldogs v Adelaide,Western Bulldogs,Western Bulldogs by 5,5.5,Close Game,59.4,6.4,59.4,40.6,Western Bulldogs,23-2,MEDIUM,1.5,Manual / No API Match,66.7,-7.3,-10.9,No Value,NO
+Geelong v Gold Coast,Geelong,Geelong by 11,11.0,Solid Margin,68.1,7.3,68.1,31.9,Geelong,26-0,MEDIUM,1.5,Manual / No API Match,66.7,1.4,2.1,Small Edge,NO
+Melbourne v Essendon,Melbourne,Melbourne by 27,27.3,Strong Margin,86.8,10.0,86.8,13.2,Melbourne,25-0,LOW,1.5,Manual / No API Match,66.7,20.1,30.2,Strong Value,YES
+North Melbourne v West Coast,North Melbourne,North Melbourne by 14,14.5,Solid Margin,73.1,8.8,73.1,26.9,North Melbourne,23-1,LOW,1.5,Manual / No API Match,66.7,6.4,9.7,Value,YES
+Port Adelaide v Sydney,Sydney,Sydney by 18,-17.7,Solid Margin,77.3,9.2,22.7,77.3,Sydney,0-25,LOW,1.5,Manual / No API Match,66.7,10.6,15.9,Strong Value,YES
+Richmond v Brisbane Lions,Brisbane Lions,Brisbane Lions by 10,-10.1,Solid Margin,66.7,7.2,33.3,66.7,Brisbane Lions,0-25,MEDIUM,1.5,Manual / No API Match,66.7,0.0,0.1,No Value,NO
+St Kilda v Greater Western Sydney,St Kilda,St Kilda by less than 1,0.3,Close Game,50.6,5.6,50.6,49.4,St Kilda,18-6,MEDIUM,1.5,Manual / No API Match,66.7,-16.1,-24.1,No Value,NO
