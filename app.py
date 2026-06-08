@@ -293,6 +293,23 @@ def expected_roi(model_probability, decimal_odds):
 
     return (model_probability * decimal_odds) - 1
 
+def calculate_profit_loss(stake, result, decimal_odds):
+    result = str(result).strip().upper()
+
+    if stake <= 0:
+        return 0
+
+    if result == "WIN":
+        return stake * (decimal_odds - 1)
+
+    if result == "LOSS":
+        return -stake
+
+    if result in ["PUSH", "VOID", "DRAW"]:
+        return 0
+
+    return 0
+
 
 def value_rating(edge_percent, roi_percent):
     if edge_percent >= 8 and roi_percent >= 8:
@@ -537,7 +554,7 @@ with col3:
 with col4:
     st.metric(
         "Model Version",
-        "V4.0 Results/ROI"
+        "V4.2 Auto P/L"
     )
 
 st.info(
@@ -626,19 +643,52 @@ if uploaded_tracker is not None:
         )
 
     else:
-        settled_df["Profit/Loss"] = pd.to_numeric(
-            settled_df["Profit/Loss"],
-            errors="coerce"
-        ).fillna(0)
-
         settled_df["Stake"] = pd.to_numeric(
             settled_df["Stake"],
             errors="coerce"
+        )
+
+        if "Recommended Stake" in settled_df.columns:
+            settled_df["Recommended Stake"] = pd.to_numeric(
+                settled_df["Recommended Stake"],
+                errors="coerce"
+            ).fillna(0)
+
+            settled_df["Stake"] = settled_df["Stake"].fillna(
+                settled_df["Recommended Stake"]
+            )
+
+        settled_df["Stake"] = settled_df["Stake"].fillna(0)
+
+        settled_df["Bookmaker Odds"] = pd.to_numeric(
+            settled_df["Bookmaker Odds"],
+            errors="coerce"
         ).fillna(0)
+
+        if "Profit/Loss" not in settled_df.columns:
+            settled_df["Profit/Loss"] = ""
+
+        settled_df["Profit/Loss"] = pd.to_numeric(
+            settled_df["Profit/Loss"],
+            errors="coerce"
+        )
+
+        settled_df["Auto Profit/Loss"] = settled_df.apply(
+            lambda row: calculate_profit_loss(
+                row["Stake"],
+                row["Result"],
+                row["Bookmaker Odds"]
+            ),
+            axis=1
+        )
+
+        settled_df["Final Profit/Loss"] = settled_df["Profit/Loss"].fillna(
+            settled_df["Auto Profit/Loss"]
+        )
 
         total_bets = len(settled_df)
         total_staked = settled_df["Stake"].sum()
-        total_profit = settled_df["Profit/Loss"].sum()
+        total_profit = settled_df["Final Profit/Loss"].sum()
 
         if unit_size > 0:
             total_staked_units = total_staked / unit_size
@@ -704,6 +754,28 @@ if uploaded_tracker is not None:
                 "Bankroll Growth",
                 f"{bankroll_growth:.1f}%"
         )
+            
+        st.subheader("Settled Bet Details")
+
+        settled_display = settled_df[
+            [
+                "Match",
+                "Final Tip",
+                "Bookmaker Odds",
+                "Stake",
+                "Result",
+                "Auto Profit/Loss",
+                "Final Profit/Loss",
+                "Value Rating",
+                "Risk"
+            ]
+        ].copy()
+
+        st.dataframe(
+            settled_display,
+            width="stretch",
+            hide_index=True
+        )
 
         st.subheader("Performance by Value Rating")
 
@@ -712,7 +784,7 @@ if uploaded_tracker is not None:
         ).agg(
             Bets=("Match", "count"),
             Total_Stake=("Stake", "sum"),
-            Profit_Loss=("Profit/Loss", "sum")
+            Profit_Loss=("Final Profit/Loss", "sum")
         ).reset_index()
 
         value_summary["ROI %"] = (
@@ -734,7 +806,7 @@ if uploaded_tracker is not None:
         ).agg(
             Bets=("Match", "count"),
             Total_Stake=("Stake", "sum"),
-            Profit_Loss=("Profit/Loss", "sum")
+            Profit_Loss=("Final Profit/Loss", "sum")
         ).reset_index()
 
         risk_summary["ROI %"] = (
