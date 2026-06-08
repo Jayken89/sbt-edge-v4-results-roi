@@ -563,7 +563,7 @@ with col3:
 with col4:
     st.metric(
         "Model Version",
-        "V4.5 Bankroll Chart"
+        "V4.6 Round Performance"
     )
 
 st.info(
@@ -937,6 +937,57 @@ if uploaded_tracker is not None:
             risk_summary,
             width="stretch",
             hide_index=True
+        )
+
+        st.subheader("Performance by Round")
+
+        round_summary = settled_df.copy()
+
+        round_summary["Win Flag"] = (
+            round_summary["Result"] == "WIN"
+        ).astype(int)
+
+        round_summary = round_summary.groupby(
+            "Round"
+        ).agg(
+            Bets=("Match", "count"),
+            Total_Stake=("Stake", "sum"),
+            Profit_Loss=("Final Profit/Loss", "sum"),
+            Wins=("Win Flag", "sum")
+        ).reset_index()
+
+        round_summary["ROI %"] = (
+            round_summary["Profit_Loss"]
+            / round_summary["Total_Stake"]
+            * 100
+        ).fillna(0).round(1)
+
+        round_summary["Win Rate %"] = (
+            round_summary["Wins"]
+            / round_summary["Bets"]
+            * 100
+        ).fillna(0).round(1)
+
+        st.dataframe(
+            round_summary,
+            width="stretch",
+            hide_index=True
+        )
+
+        st.subheader("Profit/Loss by Round")
+
+        round_chart = round_summary[
+            [
+                "Round",
+                "Profit_Loss"
+            ]
+        ].copy()
+
+        st.bar_chart(
+            round_chart,
+            x="Round",
+            y="Profit_Loss",
+            height=320
         )
 
 # ==========================
