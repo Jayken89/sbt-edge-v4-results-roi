@@ -578,6 +578,24 @@ if "has_run_predictor" not in st.session_state:
 
 st.subheader("📊 Results + ROI Tracker")
 
+bankroll_col1, bankroll_col2 = st.columns(2)
+
+with bankroll_col1:
+    starting_bankroll = st.number_input(
+        "Starting Bankroll",
+        min_value=0.0,
+        value=500.0,
+        step=50.0
+    )
+
+with bankroll_col2:
+    unit_size = st.number_input(
+        "Unit Size",
+        min_value=1.0,
+        value=10.0,
+        step=1.0
+    )
+
 uploaded_tracker = st.file_uploader(
     "Upload Bet Tracker CSV",
     type=["csv"]
@@ -622,6 +640,20 @@ if uploaded_tracker is not None:
         total_staked = settled_df["Stake"].sum()
         total_profit = settled_df["Profit/Loss"].sum()
 
+        if unit_size > 0:
+            total_staked_units = total_staked / unit_size
+            profit_units = total_profit / unit_size
+        else:
+            total_staked_units = 0
+            profit_units = 0
+
+        ending_bankroll = starting_bankroll + total_profit
+
+        if starting_bankroll > 0:
+            bankroll_growth = (total_profit / starting_bankroll) * 100
+        else:
+            bankroll_growth = 0
+
         if total_staked > 0:
             roi_percent = (total_profit / total_staked) * 100
         else:
@@ -633,7 +665,7 @@ if uploaded_tracker is not None:
 
         win_rate = (len(wins) / total_bets) * 100
 
-        roi_col1, roi_col2, roi_col3, roi_col4, roi_col5 = st.columns(5)
+        roi_col1, roi_col2, roi_col3, roi_col4, roi_col5, roi_col6 = st.columns(6)
 
         with roi_col1:
             st.metric("Settled Bets", total_bets)
@@ -649,6 +681,29 @@ if uploaded_tracker is not None:
 
         with roi_col5:
             st.metric("Win Rate", f"{win_rate:.1f}%")
+
+        with roi_col6:
+            st.metric("Ending Bankroll", f"${ending_bankroll:.2f}")
+
+        bank_col1, bank_col2, bank_col3 = st.columns(3)
+
+        with bank_col1:
+            st.metric(
+                "Total Staked Units",
+                f"{total_staked_units:.1f}u"
+        )
+
+        with bank_col2:
+            st.metric(
+                "Profit / Loss Units",
+                f"{profit_units:.1f}u"
+        )
+
+        with bank_col3:
+            st.metric(
+                "Bankroll Growth",
+                f"{bankroll_growth:.1f}%"
+        )
 
         st.subheader("Performance by Value Rating")
 
@@ -1193,6 +1248,8 @@ if st.session_state.has_run_predictor:
 
         bet_tracker["Round"] = round_number
         bet_tracker["Bet Type"] = "H2H"
+        bet_tracker["Recommended Units"] = 1
+        bet_tracker["Recommended Stake"] = unit_size
         bet_tracker["Stake"] = ""
         bet_tracker["Result"] = ""
         bet_tracker["Profit/Loss"] = ""
@@ -1214,6 +1271,8 @@ if st.session_state.has_run_predictor:
                 "Value Rating",
                 "Multi Eligible",
                 "Risk",
+                "Recommended Units",
+                "Recommended Stake",
                 "Stake",
                 "Result",
                 "Profit/Loss",
