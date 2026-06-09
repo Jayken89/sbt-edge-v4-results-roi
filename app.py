@@ -319,6 +319,33 @@ def clean_result(result):
 
     return ""
 
+def best_worst_summary(summary_df, label_column):
+    if summary_df.empty:
+        return None, None
+
+    best_row = summary_df.sort_values(
+        "ROI %",
+        ascending=False
+    ).iloc[0]
+
+    worst_row = summary_df.sort_values(
+        "ROI %",
+        ascending=True
+    ).iloc[0]
+
+    best_text = (
+        f'{best_row[label_column]} | '
+        f'ROI {best_row["ROI %"]}% | '
+        f'Profit ${best_row["Profit_Loss"]:.2f}'
+    )
+
+    worst_text = (
+        f'{worst_row[label_column]} | '
+        f'ROI {worst_row["ROI %"]}% | '
+        f'Profit ${worst_row["Profit_Loss"]:.2f}'
+    )
+
+    return best_text, worst_text
 
 def value_rating(edge_percent, roi_percent):
     if edge_percent >= 8 and roi_percent >= 8:
@@ -563,7 +590,7 @@ with col3:
 with col4:
     st.metric(
         "Model Version",
-        "V4.6 Round Performance"
+        "V4.8 Best/Worst Summary"
     )
 
 st.info(
@@ -989,6 +1016,118 @@ if uploaded_tracker is not None:
             y="Profit_Loss",
             height=320
         )
+        
+        st.subheader("Performance by Bet Type")
+
+        bet_type_summary = settled_df.copy()
+
+        bet_type_summary["Win Flag"] = (
+            bet_type_summary["Result"] == "WIN"
+        ).astype(int)
+
+        bet_type_summary = bet_type_summary.groupby(
+            "Bet Type"
+        ).agg(
+            Bets=("Match", "count"),
+            Total_Stake=("Stake", "sum"),
+            Profit_Loss=("Final Profit/Loss", "sum"),
+            Wins=("Win Flag", "sum")
+        ).reset_index()
+
+        bet_type_summary["ROI %"] = (
+            bet_type_summary["Profit_Loss"]
+            / bet_type_summary["Total_Stake"]
+            * 100
+        ).fillna(0).round(1)
+
+        bet_type_summary["Win Rate %"] = (
+            bet_type_summary["Wins"]
+            / bet_type_summary["Bets"]
+            * 100
+        ).fillna(0).round(1)
+
+        st.dataframe(
+            bet_type_summary,
+            width="stretch",
+            hide_index=True
+        )
+        st.subheader("Profit/Loss by Bet Type")
+
+        bet_type_chart = bet_type_summary[
+            [
+                "Bet Type",
+                "Profit_Loss"
+            ]
+        ].copy()
+
+        st.bar_chart(
+            bet_type_chart,
+            x="Bet Type",
+            y="Profit_Loss",
+            height=320
+        )        
+
+        # --------------------------
+        # BEST / WORST PERFORMANCE SUMMARY
+        # --------------------------
+
+        st.subheader("🏆 Best / Worst Performance Summary")
+
+        best_value, worst_value = best_worst_summary(
+            value_summary,
+            "Value Rating"
+        )
+
+        best_risk, worst_risk = best_worst_summary(
+            risk_summary,
+            "Risk"
+        )
+
+        best_round, worst_round = best_worst_summary(
+            round_summary,
+            "Round"
+        )
+
+        best_bet_type, worst_bet_type = best_worst_summary(
+            bet_type_summary,
+            "Bet Type"
+        )
+
+        summary_col1, summary_col2 = st.columns(2)
+
+        with summary_col1:
+            st.success(
+                f"Best Value Rating: {best_value}"
+            )
+
+            st.success(
+                f"Best Risk Level: {best_risk}"
+            )
+
+            st.success(
+                f"Best Round: {best_round}"
+            )
+
+            st.success(
+                f"Best Bet Type: {best_bet_type}"
+            )
+
+        with summary_col2:
+            st.warning(
+                f"Worst Value Rating: {worst_value}"
+            )
+
+            st.warning(
+                f"Worst Risk Level: {worst_risk}"
+            )
+
+            st.warning(
+                f"Worst Round: {worst_round}"
+            )
+
+            st.warning(
+                f"Worst Bet Type: {worst_bet_type}"
+            )
 
 # ==========================
 # RUN PREDICTOR
